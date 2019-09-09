@@ -1,0 +1,437 @@
+---
+title: 'IMT paper: Bayes Factors'
+author: "Thomas"
+date: "7/27/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Tim suggests using Bayes Factors on all so-called "null findings" to determine the evidence for the null.
+
+### The primary outcome statistic is the correlation between predicted and observed IMT. 
+
+### Use the "BayesFactor" package to compute BF for each correlation and generate output.
+### Follow steps in (https://richarddmorey.github.io/BayesFactor/#lincor) 
+
+### I don't know how to interpret output - Tim and Javi, please help.
+
+```{r message = F}
+library(BayesFactor)
+library(ggplot2)
+library(R.matlab)
+library(sjPlot)
+```
+
+## OldFaces (PFA stimulus set) - wholebrain pattern
+
+Load data:
+```{r}
+mat = readMat('~/Box/@Predict_IMT/Faces/OF/AllFaces/data.mat')
+imt = data.frame(observed = mat$out[[7]], predicted = mat$out[[8]])
+```
+
+Replicate correlation and scatterplot:
+```{r fig.width = 4, fig.height = 4}
+cor.test(imt$predicted, imt$observed)
+ggplot(imt, aes(x = predicted, y = observed)) + geom_point() + 
+  geom_smooth(method = lm, colour = 'black') + theme_classic() +
+  labs(x = "Predicted CA-IMT (mm)", y = "Observed CA-IMT (mm)") + 
+  theme(text = element_text(size = 14))
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#lincor):
+```{r}
+bf = correlationBF(y = imt$observed, x = imt$predicted)
+bf
+samples = posterior(bf, iterations = 10000)
+summary(samples)
+plot(samples[,"rho"])
+```
+
+## OldFaces (PFA stimulus set) - amygdala ROI
+
+Load data:
+```{r}
+mat = readMat('~/Box/@Predict_IMT/Faces/OF/AllFaces/amygdala/data.mat')
+imt = data.frame(observed = mat$out[[7]], predicted = mat$out[[8]])
+```
+
+Replicate correlation and scatterplot:
+```{r fig.width = 4, fig.height = 4}
+cor.test(imt$predicted, imt$observed)
+ggplot(imt, aes(x = predicted, y = observed)) + geom_point() + 
+  geom_smooth(method = lm, colour = 'black') + theme_classic() +
+  labs(x = "Predicted CA-IMT (mm)", y = "Observed CA-IMT (mm)") + 
+  theme(text = element_text(size = 14))
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#lincor):
+```{r}
+bf = correlationBF(y = imt$observed, x = imt$predicted)
+bf
+samples = posterior(bf, iterations = 10000)
+summary(samples)
+plot(samples[,"rho"])
+```
+
+## OldFaces (PFA stimulus set) - amygdala lesion
+
+Load data:
+```{r}
+mat = readMat('~/Box/@Predict_IMT/Faces/OF/AllFaces/amygdala_lesion/data.mat')
+imt = data.frame(observed = mat$out[[7]], predicted = mat$out[[8]])
+```
+
+Replicate correlation and scatterplot:
+```{r fig.width = 4, fig.height = 4}
+cor.test(imt$predicted, imt$observed)
+ggplot(imt, aes(x = predicted, y = observed)) + geom_point() + 
+  geom_smooth(method = lm, colour = 'black') + theme_classic() +
+  labs(x = "Predicted CA-IMT (mm)", y = "Observed CA-IMT (mm)") + 
+  theme(text = element_text(size = 14))
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#lincor):
+```{r}
+bf = correlationBF(y = imt$observed, x = imt$predicted)
+bf
+samples = posterior(bf, iterations = 10000)
+summary(samples)
+plot(samples[,"rho"])
+```
+
+## OldFaces - PINES
+
+Load data:
+```{r}
+imt = read.csv('~/Box/@Predict_IMT/Generalizability/predicted_observed_pattern-PINES_contrasts-OF.csv')
+colnames(imt) = c('predicted', 'observed')
+```
+
+Replicate correlation and scatterplot:
+```{r fig.width = 4, fig.height = 4}
+cor.test(imt$predicted, imt$observed)
+ggplot(imt, aes(x = predicted, y = observed)) + geom_point() + 
+  geom_smooth(method = lm, colour = 'black') + theme_classic() +
+  labs(x = "Predicted CA-IMT (mm)", y = "Observed CA-IMT (mm)") + 
+  theme(text = element_text(size = 14))
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#lincor):
+```{r}
+bf = correlationBF(y = imt$observed, x = imt$predicted)
+bf
+samples = posterior(bf, iterations = 10000)
+summary(samples)
+plot(samples[,"rho"])
+```
+
+## NewFaces (NIM-STIM stimulus set) - wholebrain pattern
+
+Load data:
+```{r}
+mat = readMat('~/Box/@Predict_IMT/Faces/NF/AllFaces/data.mat')
+imt = data.frame(observed = mat$out[[7]], predicted = mat$out[[8]])
+```
+
+Replicate correlation and scatterplot:
+```{r fig.width = 4, fig.height = 4}
+cor.test(imt$predicted, imt$observed)
+ggplot(imt, aes(x = predicted, y = observed)) + geom_point() + 
+  geom_smooth(method = lm, colour = 'black') + theme_classic() +
+  labs(x = "Predicted CA-IMT (mm)", y = "Observed CA-IMT (mm)") + 
+  theme(text = element_text(size = 14))
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#lincor):
+```{r}
+bf = correlationBF(y = imt$observed, x = imt$predicted)
+bf
+samples = posterior(bf, iterations = 10000)
+summary(samples)
+plot(samples[,"rho"])
+```
+
+### Did not look at NewFaces amygdala ROI / amygdala lesion because the wholebrain pattern did not sufficiently predict IMT.
+
+## IAPS - wholebrain pattern
+
+Load data:
+```{r}
+mat = readMat('~/Box/@Predict_IMT/IAPS/data.mat')
+imt = data.frame(observed = mat$out[[7]], predicted = mat$out[[8]])
+```
+
+Replicate correlation and scatterplot:
+```{r fig.width = 4, fig.height = 4}
+cor.test(imt$predicted, imt$observed)
+ggplot(imt, aes(x = predicted, y = observed)) + geom_point() + 
+  geom_smooth(method = lm, colour = 'black') + theme_classic() +
+  labs(x = "Predicted CA-IMT (mm)", y = "Observed CA-IMT (mm)") + 
+  theme(text = element_text(size = 14))
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#lincor):
+```{r}
+bf = correlationBF(y = imt$observed, x = imt$predicted)
+bf
+samples = posterior(bf, iterations = 10000)
+summary(samples)
+plot(samples[,"rho"])
+```
+
+## IAPS - amygdala ROI
+**NOTE** this produces a misleadingly strong negative correlation due to failure to generate a pattern (i.e., LASSO shrinks all predictors) in 1 of the 2 outer folds. 
+
+Load data:
+```{r}
+mat = readMat('~/Box/@Predict_IMT/IAPS/amygdala/data.mat')
+imt = data.frame(observed = mat$out[[7]], predicted = mat$out[[8]])
+```
+
+Replicate correlation and scatterplot:
+```{r fig.width = 4, fig.height = 4}
+cor.test(imt$predicted, imt$observed)
+ggplot(imt, aes(x = predicted, y = observed)) + geom_point() + 
+  geom_smooth(method = lm, colour = 'black') + theme_classic() +
+  labs(x = "Predicted CA-IMT (mm)", y = "Observed CA-IMT (mm)") + 
+  theme(text = element_text(size = 14))
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#lincor):
+```{r}
+bf = correlationBF(y = imt$observed, x = imt$predicted)
+bf
+samples = posterior(bf, iterations = 10000)
+summary(samples)
+plot(samples[,"rho"])
+```
+
+## IAPS - amygdala lesion
+
+Load data:
+```{r}
+mat = readMat('~/Box/@Predict_IMT/IAPS/amygdala_lesion/data.mat')
+imt = data.frame(observed = mat$out[[7]], predicted = mat$out[[8]])
+```
+
+Replicate correlation and scatterplot:
+```{r fig.width = 4, fig.height = 4}
+cor.test(imt$predicted, imt$observed)
+ggplot(imt, aes(x = predicted, y = observed)) + geom_point() + 
+  geom_smooth(method = lm, colour = 'black') + theme_classic() +
+  labs(x = "Predicted CA-IMT (mm)", y = "Observed CA-IMT (mm)") + 
+  theme(text = element_text(size = 14))
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#lincor):
+```{r}
+bf = correlationBF(y = imt$observed, x = imt$predicted)
+bf
+samples = posterior(bf, iterations = 10000)
+summary(samples)
+plot(samples[,"rho"])
+```
+
+
+## IAPS - PINES
+
+Load data:
+```{r}
+imt = read.csv('~/Box/@Predict_IMT/Generalizability/predicted_observed_pattern-PINES_contrasts-IAPS.csv')
+colnames(imt) = c('predicted', 'observed')
+```
+
+Replicate correlation and scatterplot:
+```{r fig.width = 4, fig.height = 4}
+cor.test(imt$predicted, imt$observed)
+ggplot(imt, aes(x = predicted, y = observed)) + geom_point() + 
+  geom_smooth(method = lm, colour = 'black') + theme_classic() +
+  labs(x = "Predicted CA-IMT (mm)", y = "Observed CA-IMT (mm)") + 
+  theme(text = element_text(size = 14))
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#lincor):
+```{r}
+bf = correlationBF(y = imt$observed, x = imt$predicted)
+bf
+samples = posterior(bf, iterations = 10000)
+summary(samples)
+plot(samples[,"rho"])
+```
+
+
+# New - BF for linear regressions (age, sex, CMR)
+
+## OldFaces (PFA stimulus set) 
+
+### Does pattern predict above and beyond covariates?
+
+Load data:
+```{r}
+imt = read.csv('~/Box/@Predict_IMT/Faces/OF/AllFaces/cmr/data_withCMR.csv')
+```
+
+Replicate regression:
+```{r fig.width = 4, fig.height = 4}
+fit1 = lm(IMT_observed ~ age + sex + CMR, data = imt)
+fit2 = lm(IMT_observed ~ age + sex + CMR + IMT_predicted, data = imt)
+tab_model(fit1, fit2, show.std = T, show.ci = F, show.se = T, show.est = F)
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#glm):
+```{r}
+full = lmBF(IMT_observed ~ age + sex + CMR + IMT_predicted, data = imt)
+noBrain = lmBF(IMT_observed ~ age + sex + CMR, data = imt)
+brainOnly = lmBF(IMT_observed ~ IMT_predicted, data = imt)
+allBFs = c(full, noBrain, brainOnly)
+allBFs
+full / noBrain
+```
+
+### Does age, sex, or CMR modify prediction?
+
+### AGE
+
+Replicate regression:
+```{r fig.width = 4, fig.height = 4}
+imt$ageint = scale(imt$age, scale = F)*scale(imt$IMT_predicted, scale = F)
+fit1 = lm(IMT_observed ~ age + IMT_predicted, data = imt)
+fit2 = lm(IMT_observed ~ age + IMT_predicted + ageint, data = imt)
+tab_model(fit1, fit2, show.std = T, show.ci = F, show.se = T, show.est = F)
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#glm):
+```{r}
+full = lmBF(IMT_observed ~ age + IMT_predicted + ageint, data = imt)
+noInteraction = lmBF(IMT_observed ~ age + IMT_predicted, data = imt)
+allBFs = c(full, noInteraction)
+allBFs
+full / noInteraction
+```
+
+### SEX
+
+Replicate regression:
+```{r fig.width = 4, fig.height = 4}
+imt$sexint = scale(imt$sex, scale = F)*scale(imt$IMT_predicted, scale = F)
+fit1 = lm(IMT_observed ~ sex + IMT_predicted, data = imt)
+fit2 = lm(IMT_observed ~ sex + IMT_predicted + sexint, data = imt)
+tab_model(fit1, fit2, show.std = T, show.ci = F, show.se = T, show.est = F)
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#glm):
+```{r}
+full = lmBF(IMT_observed ~ sex + IMT_predicted + sexint, data = imt)
+noInteraction = lmBF(IMT_observed ~ sex + IMT_predicted, data = imt)
+allBFs = c(full, noInteraction)
+allBFs
+full / noInteraction
+```
+
+### CMR
+
+Replicate regression:
+```{r fig.width = 4, fig.height = 4}
+imt$cmrint = scale(imt$CMR, scale = F)*scale(imt$IMT_predicted, scale = F)
+fit1 = lm(IMT_observed ~ CMR + IMT_predicted, data = imt)
+fit2 = lm(IMT_observed ~ CMR + IMT_predicted + cmrint, data = imt)
+tab_model(fit1, fit2, show.std = T, show.ci = F, show.se = T, show.est = F)
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#glm):
+```{r}
+full = lmBF(IMT_observed ~ CMR + IMT_predicted + cmrint, data = imt)
+noInteraction = lmBF(IMT_observed ~ CMR + IMT_predicted, data = imt)
+allBFs = c(full, noInteraction)
+allBFs
+full / noInteraction
+```
+
+## IAPS
+
+### Does pattern predict above and beyond covariates?
+
+Load data:
+```{r}
+imt = read.csv('~/Box/@Predict_IMT/IAPS/cmr/data_withCMR.csv')
+```
+
+Replicate regression:
+```{r fig.width = 4, fig.height = 4}
+fit1 = lm(IMT_observed ~ age + sex + CMR, data = imt)
+fit2 = lm(IMT_observed ~ age + sex + CMR + IMT_predicted, data = imt)
+tab_model(fit1, fit2, show.std = T, show.ci = F, show.se = T, show.est = F)
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#glm):
+```{r}
+full = lmBF(IMT_observed ~ age + sex + CMR + IMT_predicted, data = imt)
+noBrain = lmBF(IMT_observed ~ age + sex + CMR, data = imt)
+brainOnly = lmBF(IMT_observed ~ IMT_predicted, data = imt)
+allBFs = c(full, noBrain, brainOnly)
+allBFs
+full / noBrain
+```
+
+### Does age, sex, or CMR modify prediction?
+
+### AGE
+
+Replicate regression:
+```{r fig.width = 4, fig.height = 4}
+imt$ageint = scale(imt$age, scale = F)*scale(imt$IMT_predicted, scale = F)
+fit1 = lm(IMT_observed ~ age + IMT_predicted, data = imt)
+fit2 = lm(IMT_observed ~ age + IMT_predicted + ageint, data = imt)
+tab_model(fit1, fit2, show.std = T, show.ci = F, show.se = T, show.est = F)
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#glm):
+```{r}
+full = lmBF(IMT_observed ~ age + IMT_predicted + ageint, data = imt)
+noInteraction = lmBF(IMT_observed ~ age + IMT_predicted, data = imt)
+allBFs = c(full, noInteraction)
+allBFs
+full / noInteraction
+```
+
+### SEX
+
+Replicate regression:
+```{r fig.width = 4, fig.height = 4}
+imt$sexint = scale(imt$sex, scale = F)*scale(imt$IMT_predicted, scale = F)
+fit1 = lm(IMT_observed ~ sex + IMT_predicted, data = imt)
+fit2 = lm(IMT_observed ~ sex + IMT_predicted + sexint, data = imt)
+tab_model(fit1, fit2, show.std = T, show.ci = F, show.se = T, show.est = F)
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#glm):
+```{r}
+full = lmBF(IMT_observed ~ sex + IMT_predicted + sexint, data = imt)
+noInteraction = lmBF(IMT_observed ~ sex + IMT_predicted, data = imt)
+allBFs = c(full, noInteraction)
+allBFs
+full / noInteraction
+```
+
+### CMR
+
+Replicate regression:
+```{r fig.width = 4, fig.height = 4}
+imt$cmrint = scale(imt$CMR, scale = F)*scale(imt$IMT_predicted, scale = F)
+fit1 = lm(IMT_observed ~ CMR + IMT_predicted, data = imt)
+fit2 = lm(IMT_observed ~ CMR + IMT_predicted + cmrint, data = imt)
+tab_model(fit1, fit2, show.std = T, show.ci = F, show.se = T, show.est = F)
+```
+
+Compute BF as in (https://richarddmorey.github.io/BayesFactor/#glm):
+```{r}
+full = lmBF(IMT_observed ~ CMR + IMT_predicted + cmrint, data = imt)
+noInteraction = lmBF(IMT_observed ~ CMR + IMT_predicted, data = imt)
+allBFs = c(full, noInteraction)
+allBFs
+full / noInteraction
+```
