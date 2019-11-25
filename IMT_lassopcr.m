@@ -21,6 +21,7 @@ switch task
         savedir = ['Faces/' task '/AllFaces'];
 end   
 imagefiles = sprintf('filepath_%s', task);
+stratify_javi = 0;
 
 fprintf('\nTask: %s\n', task);
 
@@ -45,7 +46,7 @@ for i = 1:length(varargin)
             case {'amygdala'}
                 mask = 'amygdala';
                 
-            case {'lesion amygdala'}
+            case {'lesion amygdala' 'amygdala lesion'}
                 mask = 'lesion amygdala';
                 
             case {'outerloops' 'outerfolds'}
@@ -56,6 +57,9 @@ for i = 1:length(varargin)
             case 'stratify_by_study' 
                 % for IAPS, stratify according to study
                 stratify_by_study = 1;
+                
+            case 'stratify_javi'
+                stratify_javi = 1;
                                                
         end
     end
@@ -96,6 +100,8 @@ if do_affect
             dat.(imagefiles) = strrep(dat.(imagefiles), 'Faces/con_0001', 'Faces_Affects/con_0003');
         case {'Neutral' 'neutral'}
             dat.(imagefiles) = strrep(dat.(imagefiles), 'Faces/con_0001', 'Faces_Affects/con_0004');
+        case {'AngerFear'}
+            dat.(imagefiles) = strrep(dat.(imagefiles), 'Faces/con_0001', 'Faces_Affects/con_0015');
     end
 end
 
@@ -117,7 +123,11 @@ dat_fmri.Y = y;
 x = dat_fmri.dat';
     
 %% LASSO-PCR on all data and save overall weightmap
-stats_train_all = lassopcr_cv(dat_fmri);
+if stratify_javi
+    stats_train_all = lassopcr_cv(dat_fmri, [], 'stratify_javi');
+else
+    stats_train_all = lassopcr_cv(dat_fmri);
+end
 saveas(gcf, sprintf('%s/train_overall_predicted_observed.png', savedir));
 weightmap = dat_fmri; weightmap.dat = stats_train_all.weight_obj.dat;
 write(weightmap, 'fname', sprintf('%s/weightmap_unthresholded.nii', savedir));
@@ -131,6 +141,9 @@ if stratify_by_study
     tmp.teIdx{1} = strcmp(dat.study, 'PIP');
     tmp.trIdx{2} = strcmp(dat.study, 'PIP');
     tmp.teIdx{2} = strcmp(dat.study, 'AHAB');
+elseif stratify_javi
+    disp('Stratifying using discretized values')
+    tmp = stratified_holdout_set(discretize(table2array(dat(:, myvar)), prctile(table2array(dat(:, myvar)), 0:20:100)), 5);
 else
     tmp = stratified_holdout_set(table2array(dat(:, myvar)), 5);
     %dat.istest = tmp.teIdx;
@@ -165,7 +178,11 @@ for i = 1:tmp.NumTestSets
 
 
     %% Train using in-house code
-    stats_train(i) = lassopcr_cv(xtrain, ytrain, 'nlambdas', 1000);
+    if stratify_javi
+        stats_train(i) = lassopcr_cv(xtrain, ytrain, 'stratify_javi');
+    else
+        stats_train(i) = lassopcr_cv(xtrain, ytrain);
+    end
     %saveas(gcf, sprintf('%s/train_predicted_observed_%d.png', savedir, i));
 
     %% save unthresholded weightmap
@@ -235,10 +252,11 @@ saveas(gcf, sprintf('%s/nested_xval_output.fig', savedir));
 %% combine outputs
 
 out.mask = mask;
+out.cv_folds = tmp;
 out.model_all_data = stats_train_all;
 out.inner_training_folds = [stats_train];
 out.inner_test_folds = [stats_test];
-%out.best_labmda = [stats_train.best_lambda];
+%out.best_lambda = [stats_train.best_lambda];
 %out.num_components_from_best_lambda = [stats_train.num_components_from_best_lambda];
 out.ID = vertcat(stats_test.id);
 out.Y = vertcat(stats_test.Y); out.yfit = vertcat(stats_test.yfit);
